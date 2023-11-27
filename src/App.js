@@ -1,18 +1,12 @@
-import logo from './logo.svg';
-import './App.css';
+import { AppRoutes } from './routes';
 
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Viktoriia Pashchenko's coursework
-        </p>
-      </header>
-    </div>
-  );
+	return (
+		<div className="App">
+			<AppRoutes />
+		</div>
+	);
 }
 
 export default App;
