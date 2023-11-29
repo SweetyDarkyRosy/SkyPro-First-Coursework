@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { logIn } from "../api";
+import { useAuthContext } from "../authContext";
 
 
 const LoginPageBase = styled.div`
@@ -156,6 +158,7 @@ export const LoginPage = () => {
 	const loginInputRef = useRef(null);
 	const passwordInputRef = useRef(null);
 	const navigate = useNavigate();
+	const authContext = useAuthContext();
 
 	const [ isLoginInputErrorMarked, setLoginInputErrorMarkedState ] = useState(false);
 	const [ isPasswordInputErrorMarked, setPasswordInputErrorMarkedState ] = useState(false);
@@ -182,7 +185,13 @@ export const LoginPage = () => {
 			return;
 		}
 
-		navigate("/profile", { replace: true });
+		logIn({ username: loginInputRef.current.value, password: passwordInputRef.current.value }).then((userKeyObtained) => {
+				if (userKeyObtained != null)
+				{
+					authContext.signIn({ userKey: userKeyObtained, username: loginInputRef.current.value, password: passwordInputRef.current.value });
+					navigate("/profile", { replace: true });
+				}
+			});
 	};
 
 

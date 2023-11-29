@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Header } from "../components/Header";
 import styled from "styled-components";
 import { CourseButtonPurchased } from "../components/CourseButtonPurchased";
 import { Link } from "react-router-dom";
+import { useAuthContext } from "../authContext";
+import { updatePassword, updateUsername } from "../api";
 
 
 const ProfilePageSection = styled.section`
@@ -95,7 +97,7 @@ const DialogBase = styled.div`
 	width: 100vw;
 	height: 100vh;
 
-	z-order: 100;
+	z-index: 100;
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -149,8 +151,8 @@ const StandardInput = styled.input`
 	width: 278.5px;
 
 	background-color: transparent;
-	border: none;
-	border-bottom: 1px solid #D0CECE;
+	border: ${ props => (props.isErrorMarked ? '2px solid #9E0000': 'none') };
+	border-bottom: ${ props => (props.isErrorMarked ? '': '1px solid #D0CECE') };;
 
 	color: #000000;
 	font-style: normal;
@@ -207,21 +209,85 @@ export const ProfilePage = () => {
 	const [ isLoginEditDialogVisible, toggleLoginEditDialogVisibility ] = useState(false);
 	const [ isPasswordEditDialogVisible, togglePasswordEditDialogVisibility ] = useState(false);
 
+	const authContext = useAuthContext();
+
+	const [ isLoginInputErrorMarked, setUsernameInputErrorMarkedState ] = useState(false);
+	const newLoginInputRef = useRef(null);
+
+	const [ isPasswordInputErrorMarked, setPasswordInputErrorMarkedState ] = useState(false);
+	const [ isSecondPasswordInputErrorMarked, setSecondPasswordInputErrorMarkedState ] = useState(false);
+	const newPasswordInputRef = useRef(null);
+	const secondPasswordInputRef = useRef(null);
+
 
 	const onEditLoginClick = (event) => {
 		toggleLoginEditDialogVisibility(true);
 	}
 
+	const onNewUsernameInputInput = () => {
+		setUsernameInputErrorMarkedState(false);
+	}
+
 	const onSaveLoginChangesClick = (event) => {
-		toggleLoginEditDialogVisibility(false);
+		if (newLoginInputRef.current.value.length === 0)
+		{
+			setUsernameInputErrorMarkedState(true);
+			return;
+		}
+
+		updateUsername({ userKey: authContext.userData.userKey, newUsername: newLoginInputRef.current.value }).then((result) => {
+				if (result === true)
+				{
+					toggleLoginEditDialogVisibility(false);
+
+					authContext.signIn({ userKey: authContext.userData.userKey, username: newLoginInputRef.current.value,
+						password: authContext.userData.password });
+				}
+			});
 	}
 
 	const onEditPasswordClick = (event) => {
 		togglePasswordEditDialogVisibility(true);
 	}
 
+	const onNewPasswordInputInput = () => {
+		setPasswordInputErrorMarkedState(false);
+	}
+
+	const onSecondPasswordInputInput = () => {
+		setSecondPasswordInputErrorMarkedState(false);
+	}
+
 	const onSavePasswordChangesClick = (event) => {
-		togglePasswordEditDialogVisibility(false);
+		if (newPasswordInputRef.current.value.length === 0)
+		{
+			setPasswordInputErrorMarkedState(true);
+			return;
+		}
+
+		if (secondPasswordInputRef.current.value.length === 0)
+		{
+			setSecondPasswordInputErrorMarkedState(true);
+			return;
+		}
+
+		if (newPasswordInputRef.current.value !== secondPasswordInputRef.current.value)
+		{
+			setPasswordInputErrorMarkedState(true);
+			setSecondPasswordInputErrorMarkedState(true);
+
+			return;
+		}
+
+		updatePassword({ userKey: authContext.userData.userKey, newPassword: newPasswordInputRef.current.value }).then((result) => {
+				if (result === true)
+				{
+					togglePasswordEditDialogVisibility(false);
+
+					authContext.signIn({ userKey: authContext.userData.userKey, username: authContext.userData.username,
+						password: newPasswordInputRef.current.value });
+				}
+			});
 	}
 
 	const onModalBoxClick = (event) => {
@@ -229,7 +295,11 @@ export const ProfilePage = () => {
 	}
 
 	const onDialogBackgroundClick = (event) => {
+		setUsernameInputErrorMarkedState(false);
 		toggleLoginEditDialogVisibility(false);
+
+		setPasswordInputErrorMarkedState(false);
+		setSecondPasswordInputErrorMarkedState(false);
 		togglePasswordEditDialogVisibility(false);
 	}
 
@@ -245,8 +315,8 @@ export const ProfilePage = () => {
 			<ProfilePageSection>
 				<ProfilePageSectionName>Мой профиль</ProfilePageSectionName>
 
-				<ProfileInfo style={ { marginBottom: "20px" } }>Логин: ---</ProfileInfo>
-				<ProfileInfo style={ { marginBottom: "40px" } }>Пароль: ---</ProfileInfo>
+				<ProfileInfo style={ { marginBottom: "20px" } }>Логин: { authContext.userData.username }</ProfileInfo>
+				<ProfileInfo style={ { marginBottom: "40px" } }>Пароль: { authContext.userData.password }</ProfileInfo>
 
 				<VioletButton style={ { marginBottom: "14px" } } onClick={ onEditLoginClick }>Редактировать логин</VioletButton>
 				<VioletButton onClick={ onEditPasswordClick }>Редактировать пароль</VioletButton>
@@ -267,7 +337,8 @@ export const ProfilePage = () => {
 								<LogoImg src='img/logo_dark.png' alt="Logo" />
 							</Link>
 							<ModalBoxH3>Новый логин:</ModalBoxH3>
-							<StandardInput placeholder="Логин" style={ LocalInputCommonStyle }></StandardInput>
+							<StandardInput placeholder="Логин" style={ LocalInputCommonStyle } ref={ newLoginInputRef } onInput={ onNewUsernameInputInput }
+								isErrorMarked={ isLoginInputErrorMarked }></StandardInput>
 							<VioletButton style={ LocalButtonCommonStyle } onClick={ onSaveLoginChangesClick }>Сохранить</VioletButton>
 						</ModalBox>
 					</DialogBase>
@@ -282,8 +353,10 @@ export const ProfilePage = () => {
 								<LogoImg src='img/logo_dark.png' alt="Logo" />
 							</Link>
 							<ModalBoxH3>Новый пароль:</ModalBoxH3>
-							<StandardInput placeholder="Пароль" type="password" style={ LocalInputCommonStyle }></StandardInput>
-							<StandardInput placeholder="Повторите пароль" type="password" style={ LocalInputCommonStyle }></StandardInput>
+							<StandardInput placeholder="Пароль" type="password" style={ LocalInputCommonStyle } ref={ newPasswordInputRef }
+								onInput={ onNewPasswordInputInput } isErrorMarked={ isPasswordInputErrorMarked }></StandardInput>
+							<StandardInput placeholder="Повторите пароль" type="password" style={ LocalInputCommonStyle } ref={ secondPasswordInputRef }
+								onInput={ onSecondPasswordInputInput } isErrorMarked={ isSecondPasswordInputErrorMarked }></StandardInput>
 							<VioletButton style={ LocalButtonCommonStyle } onClick={ onSavePasswordChangesClick }>Сохранить</VioletButton>
 						</ModalBox>
 					</DialogBase>

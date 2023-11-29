@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import { registerNewUser } from "../api";
 
 
 const RegisterPageBase = styled.div`
@@ -166,20 +167,33 @@ export const RegisterPage = () => {
 		if (loginInputRef.current.value.length === 0)
 		{
 			setLoginInputErrorMarkedState(true);
+
 			return;
 		}
 
 		if (passwordInputRef.current.value.length === 0)
 		{
 			setPasswordInputErrorMarkedState(true);
+
 			return;
 		}
 
 		if (secondPasswordInputRef.current.value.length === 0)
 		{
 			setSecondPasswordInputErrorMarkedState(true);
+
 			return;
 		}
+
+		if (passwordInputRef.current.value !== secondPasswordInputRef.current.value)
+		{
+			setPasswordInputErrorMarkedState(true);
+			setSecondPasswordInputErrorMarkedState(true);
+
+			return;
+		}
+
+		registerNewUser({ username: loginInputRef.current.value, password: secondPasswordInputRef.current.value });
 	};
 
 
