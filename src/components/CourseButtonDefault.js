@@ -31,9 +31,9 @@ const CourseButtonLabel = styled.h1`
 `
 
 
-export const CourseButtonDefault = ({ courseName }) => {
+export const CourseButtonDefault = ({ courseName, courseId }) => {
 	return (
-		<Link to={ '/workout' }>
+		<Link to={ '/workout/' + courseId }>
 			<CourseButtonBase>
 				<CourseButtonLabel>{ courseName }</CourseButtonLabel>
 			</CourseButtonBase>

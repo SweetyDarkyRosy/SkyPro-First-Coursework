@@ -1,6 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import 'react-loading-skeleton/dist/skeleton.css'
+import Skeleton from 'react-loading-skeleton';
 import { Header } from '../components/Header'
+import { useParams } from "react-router-dom";
+import { getCourseCommonInfo } from "../api";
 
 
 const StandardParagraph = styled.p`
@@ -195,51 +199,77 @@ const VioletButton = styled(StandardButton)`
 
 
 export const WorkoutPage = () => {
+	const [ workoutDetails, setWorkoutDetails ] = useState(null);
+	const pageParams = useParams();
+
+
 	useEffect(() => {
 		document.body.style.backgroundColor = "#FAFAFA";
+
+		getCourseCommonInfo({ courseId: pageParams.id }).then((data) => {
+				setWorkoutDetails(data);
+			});
 	}, []);
 
 	return (
 		<React.Fragment>
 			<Header isThemeDark={ false } />
 			<WorkoutPageSection>
+			{
+				(workoutDetails == null) ?
+				<Skeleton variant="rectangular" width={ "100%" } height={ "310px" } /> :
 				<CourseHeader>
-					<CourseLabel>Йога</CourseLabel>
+					<CourseLabel>{ workoutDetails.name }</CourseLabel>
 				</CourseHeader>
+			}
 			</WorkoutPageSection>
 			<WorkoutPageSection>
 				<WorkoutPageSectionName>Подойдет для вас, если:</WorkoutPageSectionName>
-				<RecommendationList>
-					<RecommendationDiv>
-						<RecommendationDivCircle>
-							<RecommendationDivNumber>1</RecommendationDivNumber>
-						</RecommendationDivCircle>
-						<StandardParagraph>Давно хотели попробовать йогу, но не решались начать.</StandardParagraph>
-					</RecommendationDiv>
-
-					<RecommendationDiv>
-						<RecommendationDivCircle>
-							<RecommendationDivNumber>2</RecommendationDivNumber>
-						</RecommendationDivCircle>
-						<StandardParagraph>Хотите укрепить позвоночник, избавиться от болей в спине и суставах.</StandardParagraph>
-					</RecommendationDiv>
-				</RecommendationList>
+				{
+					(workoutDetails == null) ?
+					<Skeleton variant="rectangular" width={ "100%" } height={ "310px" } /> :
+					(
+						<RecommendationList>
+							{
+								workoutDetails.targetAudienceType.map((type, index) => {
+										console.log(workoutDetails.targetAudienceType.length);
+										return (
+											<RecommendationDiv>
+												<RecommendationDivCircle>
+													<RecommendationDivNumber>{ index + 1 }</RecommendationDivNumber>
+												</RecommendationDivCircle>
+												<StandardParagraph>{ type }</StandardParagraph>
+											</RecommendationDiv>)
+									})
+							}
+						</RecommendationList>
+					)
+				}
 			</WorkoutPageSection>
 			<WorkoutPageSection>
 				<WorkoutPageSectionName>Направления:</WorkoutPageSectionName>
-				<DirectionListDiv>
-					<DirectionListUl>
-						<DirectionListLi>Йога для новичков</DirectionListLi>
-						<DirectionListLi>Классическая йога</DirectionListLi>
-						<DirectionListLi>Йогатерапия</DirectionListLi>
-						<DirectionListLi>Кундалини-йога</DirectionListLi>
-						<DirectionListLi>Хатха-йога</DirectionListLi>
-						<DirectionListLi>Аштанга-йога</DirectionListLi>
-					</DirectionListUl>
-				</DirectionListDiv>
+				{
+					(workoutDetails == null) ?
+					<Skeleton variant="rectangular" width={ "100%" } height={ "310px" } /> :
+					(
+						<DirectionListDiv>
+							<DirectionListUl>
+							{
+								workoutDetails.directions.map((direction) => {
+										return <DirectionListLi>{ direction }</DirectionListLi>
+									})
+							}
+							</DirectionListUl>
+						</DirectionListDiv>
+					)
+				}
 			</WorkoutPageSection>
 			<WorkoutPageSection>
-				<StandardParagraph>Благодаря комплексному воздействию упражнений происходит проработка всех групп мышц, тренировка суставов, улучшается циркуляция крови. Кроме того, упражнения дарят отличное настроение, заряжают бодростью и помогают противостоять стрессам.</StandardParagraph>
+			{
+				(workoutDetails == null) ?
+				<Skeleton variant="rectangular" width={ "100%" } height={ "310px" } /> :
+				<StandardParagraph>{ workoutDetails.description }</StandardParagraph>
+			}
 			</WorkoutPageSection>
 			<WorkoutPageFooter>
 				<WorkoutPageFooterPhoneImg src='img/phone.svg'/>

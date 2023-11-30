@@ -2,12 +2,80 @@ import { get, onValue, push, ref, set } from "firebase/database";
 import { firebaseDataBase } from "./firebase";
 
 
-export function getCourseList() {
+export async function getCourseList() {
 	const coursesRef = ref(firebaseDataBase, 'courses/');
-	onValue(coursesRef, (snapshot) => {
-			const data = snapshot.val();
-			console.log(data);
-		});
+
+	const snapshot = await get(coursesRef);
+	if (snapshot.exists() === true)
+	{
+		const data = snapshot.val();
+		return data;
+	}
+	else
+	{
+		console.error(" - ERROR: there are no courses available");
+
+		return null;
+	}
+}
+
+export async function getCourseCommonInfo({ courseId }) {
+	let courseCommonInfo = {
+		name: "",
+		description: "",
+		directions: [],
+		targetAudienceType: []
+	}
+
+	const courseRef = ref(firebaseDataBase, 'courses/' + courseId);
+
+	const courseSnapshot = await get(courseRef);
+	if (courseSnapshot.exists() === true)
+	{
+		const courseBaseData = courseSnapshot.val();
+
+		courseCommonInfo.name = courseBaseData.name;
+
+		const courseCommonDetailsRef = ref(firebaseDataBase, 'courseCommonDetails/' + courseId);
+
+		const courseCommonDetailsSnapshot = await get(courseCommonDetailsRef);
+		if (courseCommonDetailsSnapshot.exists() === true)
+		{
+			const courseCommonDetailsData = courseCommonDetailsSnapshot.val();
+
+			// Sets a description
+			courseCommonInfo.description = courseCommonDetailsData.description;
+
+
+			// ----- Collecting of directions -----
+
+			for (let direction in courseCommonDetailsData.directions)
+			{
+				courseCommonInfo.directions.push(String(courseCommonDetailsData.directions[direction]));
+			}
+
+
+			// ----- Collecting of target audience types -----
+
+			for (let target in courseCommonDetailsData.target)
+			{
+				courseCommonInfo.targetAudienceType.push(String(courseCommonDetailsData.target[target]));
+			}
+
+
+			return courseCommonInfo;
+		}
+		else
+		{
+			console.error(" - ERROR: there are no common details about the course found");
+		}
+	}
+	else
+	{
+		console.error(" - ERROR: there are no courses available");
+	}
+
+	return null;
 }
 
 export async function registerNewUser({ username, password }) {
@@ -33,18 +101,20 @@ export async function registerNewUser({ username, password }) {
 		{
 			const newKey = push(usersRef).key;
 
-			set(ref(firebaseDataBase, ('users/' + newKey)), {
+			await set(ref(firebaseDataBase, ('users/' + newKey)), {
 					username: username,
 					password: password
 				});
+
+			return true;
 		}
 	}
 	else
 	{
 		console.error(" - ERROR: users/ data cannot be found on server");
-
-		return null;
 	}
+
+	return false;
 }
 
 export async function updateUsername({ userKey, newUsername }) {

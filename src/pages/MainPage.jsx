@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Header } from '../components/Header'
 import { CourseButtonDefault } from '../components/CourseButtonDefault'
@@ -107,6 +107,9 @@ const GreenButton = styled.div`
 
 
 export const MainPage = () => {
+	const [ courseList, setCourseList ] = useState(null);
+
+
 	const shiftToTop = () => {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	};
@@ -114,6 +117,25 @@ export const MainPage = () => {
 
 	useEffect(() => {
 		document.body.style.backgroundColor = "#271A58";
+
+		getCourseList().then((courseList) => {
+				if (courseList != null)
+				{
+					let finalCourseList = [];
+
+					for (let courseKey in courseList)
+					{
+						let courseStruct = {
+							id: courseList[courseKey]['id'],
+							name: courseList[courseKey]['name']
+						};
+
+						finalCourseList.push(courseStruct);
+					}
+
+					setCourseList(finalCourseList);
+				}
+			});
 	}, []);
 
 	return (
@@ -126,14 +148,18 @@ export const MainPage = () => {
 					<SomeAdShitImg src='img/union.svg'/>
 					<SomeAdShitText>Измени своё тело за полгода</SomeAdShitText>
 				</SomeAdShitBlock>
-				<CourseList>
-					<CourseButtonDefault courseName="Name"></CourseButtonDefault>
-					<CourseButtonDefault courseName="Name"></CourseButtonDefault>
-					<CourseButtonDefault courseName="Name"></CourseButtonDefault>
-					<CourseButtonDefault courseName="Name"></CourseButtonDefault>
-					<CourseButtonDefault courseName="Name"></CourseButtonDefault>
-				</CourseList>
-				<GreenButton onClick={ shiftToTop }>Наверх ↑</GreenButton>
+				{(courseList != null) && (
+					<React.Fragment>
+						<CourseList>
+						{
+							courseList.map((course) => {
+									return <CourseButtonDefault courseName={ course.name } courseId={ course.id }></CourseButtonDefault>
+								})
+						}
+						</CourseList>
+						<GreenButton onClick={ shiftToTop }>Наверх ↑</GreenButton>
+					</React.Fragment>)
+				}
 			</MainPageCentered>
 		</React.Fragment>);
 }

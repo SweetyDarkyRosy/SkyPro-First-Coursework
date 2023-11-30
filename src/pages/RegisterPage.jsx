@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { registerNewUser } from "../api";
+import { useAuthContext } from "../authContext";
 
 
 const RegisterPageBase = styled.div`
@@ -142,6 +143,8 @@ const LocalInputCommonStyle = {
 
 
 export const RegisterPage = () => {
+	const navigate = useNavigate();
+
 	const loginInputRef = useRef(null);
 	const passwordInputRef = useRef(null);
 	const secondPasswordInputRef = useRef(null);
@@ -193,7 +196,12 @@ export const RegisterPage = () => {
 			return;
 		}
 
-		registerNewUser({ username: loginInputRef.current.value, password: secondPasswordInputRef.current.value });
+		registerNewUser({ username: loginInputRef.current.value, password: secondPasswordInputRef.current.value }).then((result) => {
+				if (result === true)
+				{
+					navigate("/login", { replace: true });
+				}
+			});
 	};
 
 
