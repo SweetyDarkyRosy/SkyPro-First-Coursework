@@ -1,4 +1,4 @@
-import { get, onValue, push, ref, set } from "firebase/database";
+import { get, push, ref, set, update } from "firebase/database";
 import { firebaseDataBase } from "./firebase";
 
 
@@ -13,7 +13,7 @@ export async function getCourseList() {
 	}
 	else
 	{
-		console.error(" - ERROR: there are no courses available");
+		console.error(" - ERROR: There are no courses available");
 
 		return null;
 	}
@@ -67,16 +67,76 @@ export async function getCourseCommonInfo({ courseId }) {
 		}
 		else
 		{
-			console.error(" - ERROR: there are no common details about the course found");
+			console.error(" - ERROR: There are no common details about the course found");
 		}
 	}
 	else
 	{
-		console.error(" - ERROR: there are no courses available");
+		console.error(" - ERROR: There are no courses available");
 	}
 
 	return null;
 }
+
+export async function getCoursePrivateInfo({ courseId }) {
+	let coursePrivateDetails = {
+		name: "",
+		workouts: []
+	}
+
+	const courseRef = ref(firebaseDataBase, 'courses/' + courseId);
+
+	const courseSnapshot = await get(courseRef);
+	if (courseSnapshot.exists() === true)
+	{
+		const courseBaseData = courseSnapshot.val();
+
+		coursePrivateDetails.name = courseBaseData.name;
+
+		const coursePrivateDetailsRef = ref(firebaseDataBase, 'coursePrivateDetails/' + courseId);
+
+		const coursePrivateDetailsSnapshot = await get(coursePrivateDetailsRef);
+		if (coursePrivateDetailsSnapshot.exists() === true)
+		{
+			const coursePrivateDetailsData = coursePrivateDetailsSnapshot.val();
+
+			// ----- Collecting of workouts -----
+
+			for (let workout in coursePrivateDetailsData.workouts)
+			{
+				console.log(coursePrivateDetailsData.workouts[workout]);
+
+				const workoutInstance = {
+					id: Number(workout),
+					title: coursePrivateDetailsData.workouts[workout].title,
+					subtitle: null,
+					videoURL: coursePrivateDetailsData.workouts[workout].videoURL
+				};
+
+				if (coursePrivateDetailsData.workouts[workout].subtitle !== undefined)
+				{
+					workoutInstance.subtitle = coursePrivateDetailsData.workouts[workout].subtitle;
+				}
+
+				coursePrivateDetails.workouts.push(workoutInstance);
+			}
+			
+
+			return coursePrivateDetails;
+		}
+		else
+		{
+			console.error(" - ERROR: There are no common details about the course found");
+		}
+	}
+	else
+	{
+		console.error(" - ERROR: There are no courses available");
+	}
+
+	return null;
+}
+
 
 export async function registerNewUser({ username, password }) {
 	const usersRef = ref(firebaseDataBase, 'users/');
@@ -143,18 +203,15 @@ export async function updateUsername({ userKey, newUsername }) {
 			const snapshot = await get(userRef);
 			if (snapshot.exists() === true)
 			{
-				const currUserData = snapshot.val();
-			
-				await set(userRef, {
-						username: newUsername,
-						password: currUserData.password
+				await update(userRef, {
+						username: newUsername
 					});
 				
 				return true;
 			}
 			else
 			{
-				console.error(" - ERROR: current user was not found on server");
+				console.error(" - ERROR: Current user was not found on server");
 			}
 		}
 	}
@@ -172,10 +229,7 @@ export async function updatePassword({ userKey, newPassword }) {
 	const snapshot = await get(userRef);
 	if (snapshot.exists() === true)
 	{
-		const currUserData = snapshot.val();
-	
-		await set(userRef, {
-				username: currUserData.username,
+		await update(userRef, {
 				password: newPassword
 			});
 		
@@ -183,7 +237,7 @@ export async function updatePassword({ userKey, newPassword }) {
 	}
 	else
 	{
-		console.error(" - ERROR: current user was not found on server");
+		console.error(" - ERROR: Current user was not found on server");
 
 		return false;
 	}
@@ -195,8 +249,6 @@ export async function logIn({ username, password }) {
 	const snapshot = await get(usersRef);
 	if (snapshot.exists() === true)
 	{
-		let userKeyObtained = null;
-
 		const userList = snapshot.val();
 		for (let userKey in userList)
 		{
@@ -204,19 +256,26 @@ export async function logIn({ username, password }) {
 			{
 				if (userList[userKey]['password'] === password)
 				{
-					userKeyObtained = String(userKey);
+					let userData = {
+						userKey: String(userKey),
+						username: username,
+						password: password,
+						courses: []
+					};
+
+					if (userList[userKey]['courses'] !== undefined)
+					{
+						userData.courses = userList[userKey]['courses'];
+					}
+
+					return userData;
 				}
 				
 				break;
 			}
 		}
-
-		if (userKeyObtained == null)
-		{
-			console.error(" - ERROR: Invalid username or password");
-		}
-
-		return userKeyObtained;
+		
+		console.error(" - ERROR: Invalid username or password");
 	}
 	else
 	{
@@ -224,4 +283,77 @@ export async function logIn({ username, password }) {
 
 		return null;
 	}
+}
+
+export async function getUserData({ userKey }) {
+	const userRef = ref(firebaseDataBase, 'users/' + userKey);
+
+	const userSnapshot = await get(userRef);
+	if (userSnapshot.exists() === true)
+	{
+		const currUserData = userSnapshot.val();
+
+		let userData = {
+			userKey: userKey,
+			username: currUserData.username,
+			password: currUserData.password,
+			courses: []
+		};
+
+		if (currUserData.courses !== undefined)
+		{
+			userData.courses = currUserData.courses;
+		}
+
+		return userData;
+	}
+	else
+	{
+		console.error(" - ERROR: Current user was not found on server");
+
+		return null;
+	}
+}
+
+export async function subscribeOnCourse({ userKey, courseId }) {
+	const courseRef = ref(firebaseDataBase, 'courses/' + courseId);
+
+	const courseRefSnapshot = await get(courseRef);
+	if (courseRefSnapshot.exists() === true)
+	{
+		const userRef = ref(firebaseDataBase, 'users/' + userKey);
+
+		const userSnapshot = await get(userRef);
+		if (userSnapshot.exists() === true)
+		{
+			const currUserData = userSnapshot.val();
+
+			let courseList = [];
+			if (currUserData.courses !== undefined)
+			{
+				courseList = currUserData.courses;
+			}
+
+			if (courseList.includes(courseId) === false)
+			{
+				courseList.push(Number(courseId));
+		
+				await update(userRef, {
+						courses: courseList
+					});
+			
+				return true;
+			}
+		}
+		else
+		{
+			console.error(" - ERROR: Current user was not found on server");
+		}
+	}
+	else
+	{
+		console.error(" - ERROR: The course is not available on server");
+	}
+
+	return false;
 }

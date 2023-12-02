@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { CourseButtonPurchased } from "../components/CourseButtonPurchased";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "../authContext";
-import { updatePassword, updateUsername } from "../api";
+import { getCourseList, getUserData, updatePassword, updateUsername } from "../api";
 
 
 const ProfilePageSection = styled.section`
@@ -206,10 +206,12 @@ const LocalInputCommonStyle = {
 
 
 export const ProfilePage = () => {
+	const [ courseList, setCourseList ] = useState(null);
+	const authContext = useAuthContext();
+
+
 	const [ isLoginEditDialogVisible, toggleLoginEditDialogVisibility ] = useState(false);
 	const [ isPasswordEditDialogVisible, togglePasswordEditDialogVisibility ] = useState(false);
-
-	const authContext = useAuthContext();
 
 	const [ isLoginInputErrorMarked, setUsernameInputErrorMarkedState ] = useState(false);
 	const newLoginInputRef = useRef(null);
@@ -238,10 +240,14 @@ export const ProfilePage = () => {
 		updateUsername({ userKey: authContext.userData.userKey, newUsername: newLoginInputRef.current.value }).then((result) => {
 				if (result === true)
 				{
-					toggleLoginEditDialogVisibility(false);
+					getUserData({ userKey: authContext.userData.userKey }).then((userData) => {
+							if (userData != null)
+							{
+								authContext.signIn({ userData: userData });
 
-					authContext.signIn({ userKey: authContext.userData.userKey, username: newLoginInputRef.current.value,
-						password: authContext.userData.password });
+								toggleLoginEditDialogVisibility(false);
+							}
+						});
 				}
 			});
 	}
@@ -282,10 +288,14 @@ export const ProfilePage = () => {
 		updatePassword({ userKey: authContext.userData.userKey, newPassword: newPasswordInputRef.current.value }).then((result) => {
 				if (result === true)
 				{
-					togglePasswordEditDialogVisibility(false);
+					getUserData({ userKey: authContext.userData.userKey }).then((userData) => {
+							if (userData != null)
+							{
+								authContext.signIn({ userData: userData });
 
-					authContext.signIn({ userKey: authContext.userData.userKey, username: authContext.userData.username,
-						password: newPasswordInputRef.current.value });
+								togglePasswordEditDialogVisibility(false);
+							}
+						});
 				}
 			});
 	}
@@ -306,6 +316,28 @@ export const ProfilePage = () => {
 
 	useEffect(() => {
 		document.body.style.backgroundColor = "#FAFAFA";
+
+		getCourseList().then((courseList) => {
+				if (courseList != null)
+				{
+					let finalCourseList = [];
+
+					for (let courseKey in courseList)
+					{
+						if (authContext.userData.courses.includes(courseList[courseKey]['id']) === true)
+						{
+							let courseStruct = {
+								id: courseList[courseKey]['id'],
+								name: courseList[courseKey]['name']
+							};
+
+							finalCourseList.push(courseStruct);
+						}
+					}
+
+					setCourseList(finalCourseList);
+				}
+			});
 	}, []);
 
 	return (
@@ -323,10 +355,15 @@ export const ProfilePage = () => {
 			</ProfilePageSection>
 			<ProfilePageSection>
 				<ProfilePageSectionName>Мои курсы</ProfilePageSectionName>
-				<CourseList>
-					<CourseButtonPurchased courseName="Name"></CourseButtonPurchased>
-					<CourseButtonPurchased courseName="Name"></CourseButtonPurchased>
-				</CourseList>
+				{(courseList != null) && (
+					<CourseList>
+					{
+						courseList.map((course) => {
+								return <CourseButtonPurchased courseName={ course.name } courseId={ course.id }></CourseButtonPurchased>
+							})
+					}
+					</CourseList>)
+				}
 			</ProfilePageSection>
 
 			{

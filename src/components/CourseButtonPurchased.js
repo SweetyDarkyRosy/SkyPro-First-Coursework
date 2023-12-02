@@ -59,12 +59,12 @@ const CourseButtonPressZone = styled.div`
 `
 
 
-export const CourseButtonPurchased = ({ courseName }) => {
+export const CourseButtonPurchased = ({ courseName, courseId }) => {
 	return (
 		
 		<CourseButtonBase>
 			<CourseButtonLabel>{ courseName }</CourseButtonLabel>
-			<Link to={ '/workout' }>
+			<Link to={ '/workout/' + courseId }>
 				<CourseButtonPressZone>Перейти →</CourseButtonPressZone>
 			</Link>
 		</CourseButtonBase>);

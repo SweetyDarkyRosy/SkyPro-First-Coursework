@@ -13,8 +13,8 @@ export const AuthProvider = (props) => {
 	const [user, setUser] = useState(null);
 
 
-	const signIn = ({ userKey, username, password }) => {
-		setUser({ userKey: userKey, username: username, password: password });
+	const signIn = ({ userData }) => {
+		setUser(userData);
 	}
 
 	const signOut = () => {

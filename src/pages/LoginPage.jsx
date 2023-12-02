@@ -185,10 +185,10 @@ export const LoginPage = () => {
 			return;
 		}
 
-		logIn({ username: loginInputRef.current.value, password: passwordInputRef.current.value }).then((userKeyObtained) => {
-				if (userKeyObtained != null)
+		logIn({ username: loginInputRef.current.value, password: passwordInputRef.current.value }).then((userData) => {
+				if (userData != null)
 				{
-					authContext.signIn({ userKey: userKeyObtained, username: loginInputRef.current.value, password: passwordInputRef.current.value });
+					authContext.signIn({ userData: userData });
 					navigate("/profile", { replace: true });
 				}
 			});
