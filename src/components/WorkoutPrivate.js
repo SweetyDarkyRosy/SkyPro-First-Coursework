@@ -371,6 +371,25 @@ const ProgressDialogInput = styled.input`
 	}
 `;
 
+const ProgressAcceptedText = styled.p`
+	margin: 0 40px 12px 40px;
+
+	width: 268px;
+
+	color: #000000;
+	font-weight: 400;
+	font-size: 40px;
+	line-height: 48px;
+	text-align: center;
+`;
+
+const ProgressAcceptedImg = styled.img`
+	width: 200px;
+	height: fit-content;
+
+	bottom: 0px;
+`
+
 
 export const WorkoutPrivate = ({ courseId }) => {
 	const authContext = useAuthContext();
@@ -382,6 +401,7 @@ export const WorkoutPrivate = ({ courseId }) => {
 
 	const [ isWorkoutMenuDialogVisible, toggleWorkoutMenuDialogVisibility ] = useState(false);
 	const [ isProgressDialogVisible, toggleProgressDialogVisibility ] = useState(false);
+	const [ isProgressAcceptedNotificationVisible, toggleProgressAcceptedNotificationVisibility ] = useState(false);
 
 
 	const onDialogBackgroundClick = (event) => {
@@ -435,6 +455,10 @@ export const WorkoutPrivate = ({ courseId }) => {
 				{
 					toggleProgressDialogVisibility(false);
 					setProgessBuffer([]);
+
+					toggleProgressAcceptedNotificationVisibility(true);
+					
+					setTimeout(() => { toggleProgressAcceptedNotificationVisibility(false) }, 1500);
 
 					getUserData({ userKey: authContext.userData.userKey }).then((userData) => {
 							if (userData != null)
@@ -622,6 +646,16 @@ export const WorkoutPrivate = ({ courseId }) => {
 						</ModalBox>
 					</DialogBase>
 				)
+			}
+			
+			{
+				isProgressAcceptedNotificationVisible && (
+					<DialogBase onClick={ onDialogBackgroundClick }>
+						<ModalBox onClick={ onModalBoxClick }>
+								<ProgressAcceptedText>Ваш прогресс засчитан!</ProgressAcceptedText>
+								<ProgressAcceptedImg src='/img/progressAccepted.svg'/>
+						</ModalBox>
+					</DialogBase>)
 			}
 			
 		</React.Fragment>)
