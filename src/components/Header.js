@@ -128,7 +128,7 @@ export const Header = (props) => {
 	return (
 		<HeaderDiv>
 			<Link to={ '/' }>
-				<LogoImg src={ (props.isThemeDark === true) ? 'img/logo_bright.png' : 'img/logo_dark.png' } alt="Logo" />
+				<LogoImg src={ (props.isThemeDark === true) ? '/img/logo_bright.png' : '/img/logo_dark.png' } alt="Logo" />
 			</Link>
 
       {(authContext.userData == null) && (
@@ -139,7 +139,7 @@ export const Header = (props) => {
 
       {(authContext.userData != null) && (
           <AccoutBlock>
-            <AccoutAvatarImg src="img/avatarPlaceholder.svg" alt="Avatar"/>
+            <AccoutAvatarImg src="/img/avatarPlaceholder.svg" alt="Avatar"/>
             <AccoutUsername isThemeDark={ props.isThemeDark }>{ authContext.userData.username }</AccoutUsername>
             <AccoutRollOutBlock onClick={ onRollOutAccoutMenuClick }>
               <svg width="14" height="14" viewBox="0 0 14 9" fill="none" xmlns="http://www.w3.org/2000/svg">

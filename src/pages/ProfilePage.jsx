@@ -98,7 +98,7 @@ const DialogBase = styled.div`
 	height: 100vh;
 
 	z-index: 100;
-	position: absolute;
+	position: fixed;
 	top: 0px;
 	left: 0px;
 
@@ -324,7 +324,19 @@ export const ProfilePage = () => {
 
 					for (let courseKey in courseList)
 					{
+						/*
 						if (authContext.userData.courses.includes(courseList[courseKey]['id']) === true)
+						{
+							let courseStruct = {
+								id: courseList[courseKey]['id'],
+								name: courseList[courseKey]['name']
+							};
+
+							finalCourseList.push(courseStruct);
+						}
+						*/
+
+						if (authContext.userData.courses[courseList[courseKey]['id']] !== undefined)
 						{
 							let courseStruct = {
 								id: courseList[courseKey]['id'],
@@ -371,7 +383,7 @@ export const ProfilePage = () => {
 					<DialogBase onClick={ onDialogBackgroundClick }>
 						<ModalBox onClick={ onModalBoxClick }>
 							<Link to="/">
-								<LogoImg src='img/logo_dark.png' alt="Logo" />
+								<LogoImg src='/img/logo_dark.png' alt="Logo" />
 							</Link>
 							<ModalBoxH3>Новый логин:</ModalBoxH3>
 							<StandardInput placeholder="Логин" style={ LocalInputCommonStyle } ref={ newLoginInputRef } onInput={ onNewUsernameInputInput }
@@ -387,7 +399,7 @@ export const ProfilePage = () => {
 					<DialogBase onClick={ onDialogBackgroundClick }>
 						<ModalBox onClick={ onModalBoxClick }>
 							<Link to="/">
-								<LogoImg src='img/logo_dark.png' alt="Logo" />
+								<LogoImg src='/img/logo_dark.png' alt="Logo" />
 							</Link>
 							<ModalBoxH3>Новый пароль:</ModalBoxH3>
 							<StandardInput placeholder="Пароль" type="password" style={ LocalInputCommonStyle } ref={ newPasswordInputRef }

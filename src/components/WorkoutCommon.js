@@ -293,7 +293,7 @@ export const WorkoutCommon = ({ courseId }) => {
 			}
 			</WorkoutPageSection>
 			<WorkoutPageFooter>
-				<WorkoutPageFooterPhoneImg src='img/phone.svg'/>
+				<WorkoutPageFooterPhoneImg src='/img/phone.svg'/>
 				<WorkoutPageFooterParagraph>Оставьте заявку на пробное занятие, мы свяжемся с вами, поможем с выбором направления и тренера, с которым тренировки принесут здоровье и радость!</WorkoutPageFooterParagraph>
 				<VioletButton onClick={ onSubscribeButtonClick }>Записаться на тренировку</VioletButton>
 			</WorkoutPageFooter>

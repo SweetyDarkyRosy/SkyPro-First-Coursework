@@ -77,7 +77,7 @@ export const NotFoundPage = () => {
 	return (
 		<NotFoundPageBase>
 			<ModalBox>
-				<LogoImg src='img/logo_dark.png' alt="Logo" />
+				<LogoImg src='/img/logo_dark.png' alt="Logo" />
 				<ErrorCode>404</ErrorCode>
 				<ErrorText>Страница не была найдена</ErrorText>
 				<RedirectText to={ '/' }>На главную страницу</RedirectText>

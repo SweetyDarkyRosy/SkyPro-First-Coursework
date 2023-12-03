@@ -14,21 +14,20 @@ export const WorkoutPage = () => {
 
 
 	const setWorkoutState = () => {
+		let isPurchased = false;
+
 		if (authContext.userData != null)
 		{
-			if (authContext.userData.courses.includes(Number(pageParams.id)) === true)
+			for (let course in authContext.userData.courses)
 			{
-				setIfCoursePurchased(true);
-			}
-			else
-			{
-				setIfCoursePurchased(false);
+				if (Number(course) === Number(pageParams.id))
+				{
+					isPurchased = true;
+				}
 			}
 		}
-		else
-		{
-			setIfCoursePurchased(false);
-		}
+
+		setIfCoursePurchased(isPurchased);
 	}
 
 

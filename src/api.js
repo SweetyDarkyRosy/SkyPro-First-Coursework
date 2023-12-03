@@ -104,19 +104,41 @@ export async function getCoursePrivateInfo({ courseId }) {
 
 			for (let workout in coursePrivateDetailsData.workouts)
 			{
-				console.log(coursePrivateDetailsData.workouts[workout]);
-
 				const workoutInstance = {
 					id: Number(workout),
 					title: coursePrivateDetailsData.workouts[workout].title,
 					subtitle: null,
-					videoURL: coursePrivateDetailsData.workouts[workout].videoURL
+					videoURL: coursePrivateDetailsData.workouts[workout].videoURL,
+					exercises: null
 				};
 
 				if (coursePrivateDetailsData.workouts[workout].subtitle !== undefined)
 				{
 					workoutInstance.subtitle = coursePrivateDetailsData.workouts[workout].subtitle;
 				}
+
+
+				// ----- Collecting of exercises of a workout -----
+
+				if (coursePrivateDetailsData.workouts[workout].exercises !== undefined)
+				{
+					for (let exercise in coursePrivateDetailsData.workouts[workout].exercises)
+					{
+						const exerciseInstance = {
+							id: Number(exercise),
+							name: coursePrivateDetailsData.workouts[workout].exercises[exercise].name,
+							count: coursePrivateDetailsData.workouts[workout].exercises[exercise].count
+						};
+
+						if (workoutInstance.exercises === null)
+						{
+							workoutInstance.exercises = [];
+						}
+
+						workoutInstance.exercises.push(exerciseInstance);
+					}
+				}
+
 
 				coursePrivateDetails.workouts.push(workoutInstance);
 			}
@@ -260,7 +282,7 @@ export async function logIn({ username, password }) {
 						userKey: String(userKey),
 						username: username,
 						password: password,
-						courses: []
+						courses: {}
 					};
 
 					if (userList[userKey]['courses'] !== undefined)
@@ -297,7 +319,7 @@ export async function getUserData({ userKey }) {
 			userKey: userKey,
 			username: currUserData.username,
 			password: currUserData.password,
-			courses: []
+			courses: {}
 		};
 
 		if (currUserData.courses !== undefined)
@@ -328,22 +350,19 @@ export async function subscribeOnCourse({ userKey, courseId }) {
 		{
 			const currUserData = userSnapshot.val();
 
-			let courseList = [];
+			let courseList = {};
 			if (currUserData.courses !== undefined)
 			{
 				courseList = currUserData.courses;
 			}
 
-			if (courseList.includes(courseId) === false)
-			{
-				courseList.push(Number(courseId));
+			courseList[courseId] = { id: Number(courseId) };
 		
-				await update(userRef, {
-						courses: courseList
-					});
-			
-				return true;
-			}
+			await update(userRef, {
+					courses: courseList
+				});
+		
+			return true;
 		}
 		else
 		{
@@ -353,6 +372,47 @@ export async function subscribeOnCourse({ userKey, courseId }) {
 	else
 	{
 		console.error(" - ERROR: The course is not available on server");
+	}
+
+	return false;
+}
+
+export async function setExerciseProgress({ userKey, courseId, workoutId, progress, isComplete }) {
+	const userRef = ref(firebaseDataBase, 'users/' + userKey);
+
+	const userSnapshot = await get(userRef);
+	if (userSnapshot.exists() === true)
+	{
+		const currUserData = userSnapshot.val();
+
+		let courseList = {};
+		if (currUserData.courses !== undefined)
+		{
+			courseList = currUserData.courses;
+		}
+
+		if (courseList[courseId].workouts === undefined)
+		{
+			courseList[courseId].workouts = [];
+		}
+
+		if (courseList[courseId].workouts[workoutId] === undefined)
+		{
+			courseList[courseId].workouts[workoutId] = { id: Number(workoutId), exercises: [] };
+		}
+
+		courseList[courseId].workouts[workoutId].exercises = progress;
+		courseList[courseId].workouts[workoutId].isComplete = isComplete;
+
+		await update(userRef, {
+				courses: courseList
+			});
+
+		return true;
+	}
+	else
+	{
+		console.error(" - ERROR: Current user was not found on server");
 	}
 
 	return false;

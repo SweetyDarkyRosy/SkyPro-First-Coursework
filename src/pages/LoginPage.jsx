@@ -204,7 +204,7 @@ export const LoginPage = () => {
 		<LoginPageBase>
 			<ModalBox>
 				<Link to="/">
-					<LogoImg src='img/logo_dark.png' alt="Logo" />
+					<LogoImg src='/img/logo_dark.png' alt="Logo" />
 				</Link>
 				<StandardInput placeholder="Логин" style={ LocalInputCommonStyle } ref={ loginInputRef } onInput={ onLoginInputInput }
 					isErrorMarked={ isLoginInputErrorMarked }></StandardInput>

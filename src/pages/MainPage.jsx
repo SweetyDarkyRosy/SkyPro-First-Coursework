@@ -145,7 +145,7 @@ export const MainPage = () => {
 				<MainPageH2>Онлайн-тренировки для занятий дома</MainPageH2>
 				<MainPageH1>Начните заниматься спортом и улучшите качество жизни</MainPageH1>
 				<SomeAdShitBlock>
-					<SomeAdShitImg src='img/union.svg'/>
+					<SomeAdShitImg src='/img/union.svg'/>
 					<SomeAdShitText>Измени своё тело за полгода</SomeAdShitText>
 				</SomeAdShitBlock>
 				{(courseList != null) && (
