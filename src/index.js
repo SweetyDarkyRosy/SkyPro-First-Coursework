@@ -10,7 +10,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
 	<React.StrictMode>
-		<BrowserRouter basename='https://sweetydarkyrosy.github.io/SkyPro-First-Coursework/'>
+		<BrowserRouter>
 			<App />
 		</BrowserRouter>
 	</React.StrictMode>
